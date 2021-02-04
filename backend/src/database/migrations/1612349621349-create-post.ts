@@ -8,11 +8,11 @@ export class createPost1612349621349 implements MigrationInterface {
             columns: [
                 {
                     name: 'id',
-                    type: 'integer',
-                    unsigned: true,
+                    type: 'varchar',
                     isPrimary: true,
                     isGenerated: true,
-                    generationStrategy: 'increment'
+                    generationStrategy: 'uuid',
+                    default: 'uuid_generate_v4()'
                 }, {
                     name: 'title',
                     type: 'varchar',

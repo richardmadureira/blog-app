@@ -8,5 +8,6 @@ routes.put('/posts/:id', PostController.update);
 routes.delete('/posts/:id', PostController.delete);
 routes.get('/posts/:id', PostController.findById);
 routes.post('/posts/pesquisa', PostController.findAll);
+routes.get('/posts/post-ids/all', PostController.findAllPostIds);
 
 export default routes;

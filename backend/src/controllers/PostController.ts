@@ -64,9 +64,9 @@ export default {
 
     async findAll(req: Request<PostParams, Post[], Post, PostQuery, any>, res: Response<Post[]>) {
         const { title, author, summary, content, publishDate, lastUpdate } = req.body;
-        const { page = 1, size = 10, order = '{"id":"ASC"}'  } = req.query;
+        const { page = 1, size = 10, order = '{"publishDate":"DESC"}' } = req.query;
         const data = { title, author, summary, content, publishDate, lastUpdate };
-        const schema = Yup.object().shape({ 
+        const schema = Yup.object().shape({
             title: Yup.string().notRequired(),
             author: Yup.string().notRequired(),
             summary: Yup.string().notRequired(),
@@ -77,7 +77,7 @@ export default {
         await schema.validate(data, { abortEarly: false });
 
         const whereArgs = getWhereArgs(data);
-        const result: [Post[], number] = await getRepository(Post).findAndCount({order: JSON.parse(order),  where: whereArgs,  take: size, skip: (page -1)});
+        const result: [Post[], number] = await getRepository(Post).findAndCount({ order: JSON.parse(order), where: whereArgs, take: size, skip: (page - 1) });
 
         return res
             .header('x-page', page.toString())
@@ -112,5 +112,13 @@ export default {
         return res
             .header('messages', JSON.stringify([new Message(Severity.error, 'Post não encontrado', `Não foi encontrado nenhum post para o identificador ${id} informado`)]))
             .sendStatus(404);
+    },
+
+    async findAllPostIds(req: Request, res: Response) {
+        const posts: Array<Post> = await getRepository(Post).find({select: ["id"]});
+        return res
+            .header("messages", JSON.stringify([new Message(Severity.success, 'Ids encontrados', `${posts.length} ids encontrados`)]))
+            .json(postView.renderManyIds(posts));
+
     }
 }

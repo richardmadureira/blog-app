@@ -15,6 +15,14 @@ export default {
 
     renderMany(posts: Post[]) {
         return posts.map(post => this.render(post));
+    },
+
+    renderId(post: Post){
+        return post.id;
+    },
+
+    renderManyIds(posts: Post[]){
+        return posts.map(p => this.renderId(p));
     }
 
 }
