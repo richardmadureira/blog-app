@@ -1,6 +1,6 @@
-import { getAllPostIds, getPostData} from '../../lib/posts';
+import { getAllPostIds, getPostData } from '../../lib/posts';
 
-export default function Post({postData}) {
+export default function Post({ postData }) {
     return (
         <>
             <h1>Post</h1>
@@ -27,9 +27,9 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }) {
     const postData = await getPostData(params.id);
     return {
-      props: {
-        postData
-      },
-      revalidate: 10
+        props: {
+            postData
+        },
+        revalidate: 10
     }
-  }
+}
