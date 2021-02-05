@@ -15,7 +15,7 @@ export default function Home({ allPostsData }) {
         <h1 className={styles.title}>Posts</h1>
         <div className="d-flex align-content-between justify-content-center">
           {allPostsData.map(({ id, title, publishDate }) => (
-            <Link href={`/posts/${id}`}>
+            <Link key={id} href={`/posts/${id}`}>
               <div className="card m-1">
                 <div className="card-body">
                   <div className="card-title">{title}</div>
