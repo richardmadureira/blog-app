@@ -1,6 +1,10 @@
 {
-    "type": "sqlite",
-    "database": "./src/database/database.sqlite",
+    "type": "postgres",
+    "host": "localhost",
+    "post": 5432,
+    "username": "blog-app",
+    "password": "blog-app00",
+    "database": "blog-db",
     "migrations":[
         "./src/database/migrations/*.ts"
     ],

@@ -1,0 +1,13 @@
+version: "3.7"
+services:
+  postgres:
+    image: "postgres:13.1"
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_DB=blog-db
+      - POSTGRES_USER=blog-app
+    env_file:
+      - proj.env
+    volumes:
+      - ./db-data:/var/lib/postgresql/data

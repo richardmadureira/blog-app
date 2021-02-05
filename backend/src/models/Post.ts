@@ -12,8 +12,8 @@ export class Post {
     summary: String;
     @Column()
     content: String;
-    @CreateDateColumn({ name: 'publish_date'})
+    @CreateDateColumn({ name: 'publish_date', update: false})
     publishDate: Date;
-    @UpdateDateColumn({ name: 'last_update'})
+    @UpdateDateColumn({ name: 'last_update', update: true})
     lastUpdate: Date;
 }

@@ -10,7 +10,6 @@ export class createPost1612349621349 implements MigrationInterface {
                     name: 'id',
                     type: 'varchar',
                     isPrimary: true,
-                    isGenerated: true,
                     generationStrategy: 'uuid',
                     default: 'uuid_generate_v4()'
                 }, {
@@ -27,10 +26,14 @@ export class createPost1612349621349 implements MigrationInterface {
                     type: 'varchar',
                 }, {
                     name: 'publish_date',
-                    type: 'bigint'
+                    type: 'timestamp',
+                    isNullable: false,
+                    default: 'current_timestamp',
                 }, {
                     name: 'last_update',
-                    type: 'bigint'
+                    type: 'timestamp',
+                    isNullable: false,
+                    default: 'current_timestamp',
                 }
             ]
         }));

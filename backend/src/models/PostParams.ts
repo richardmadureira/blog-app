@@ -1,3 +1,3 @@
 export interface PostParams {
-    id: number;
+    id: string;
 }

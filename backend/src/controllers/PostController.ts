@@ -24,11 +24,16 @@ export default {
 
         const postRepository = getRepository(Post);
         const post = postRepository.create(data);
-        const postSaved = await postRepository.save(post);
+        const insertResult = await postRepository.insert(post);
         return res
             .status(201)
             .header('messages', JSON.stringify([new Message(Severity.success, 'Post criado', 'O post foi criado com sucesso!')]))
-            .json(postSaved);
+            .json({ ...data, ...insertResult.raw[0]});
+        // const savedPost = await postRepository.save(post);
+        // return res
+        //     .status(201)
+        //     .header('messages', JSON.stringify([new Message(Severity.success, 'Post criado', 'O post foi criado com sucesso!')]))
+        //     .json(savedPost);
     },
 
     async update(req: Request<PostParams, Post, Post, any, any>, res: Response<Post>) {
@@ -50,12 +55,13 @@ export default {
             });
             await schema.validate(data, { abortEarly: false });
             const columns: any = getWhereArgs(data);
-            //FIXME pegar o retorno e verificar se houve colunas atualizadas
             await getRepository(Post).update(id, columns);
+            //estou fazendo uma nova consulta porque o 'await getRepository(Post).update(id, columns)' não retorna a coluna publishDate (ou lastUpdate) corretamente;
+            const updatedPost = await getRepository(Post).findOne(id);
             return res
                 .status(200)
                 .header('messages', JSON.stringify([new Message(Severity.error, 'Post atualizado', `O post de identificador ${id} informado foi atualizado com sucesso`)]))
-                .json(post);
+                .json(updatedPost);
         }
         return res
             .header('messages', JSON.stringify([new Message(Severity.warning, 'Post não encontrado', `Não foi encontrado nenhum post para o identificador ${id} informado`)]))
