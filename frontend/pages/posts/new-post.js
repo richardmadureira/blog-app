@@ -1,7 +1,10 @@
+import Link from "next/link";
 import { useState } from "react";
+import Layout from "../../components/Layout";
 import Messages from '../../components/messages';
 import { savePost, updatePost } from "../../lib/posts";
 import { agruparMensagens } from "../../lib/utils";
+import { FaCheck, FaTimes, FaArrowLeft } from "react-icons/fa";
 
 export default function PostForm({ postData }) {
     const [id, setId] = useState('');
@@ -47,7 +50,7 @@ export default function PostForm({ postData }) {
         if (!id) {
             savedOrUpdatedPost = await savePost(post);
             setMessages({ severity: 'success', summary: "Post Salvo", detail: 'O post foi salvo com sucesso' });
-        } else{
+        } else {
             savedOrUpdatedPost = await updatePost(id, post);
             setMessages({ severity: 'success', summary: "Post Atualizado", detail: 'O post foi atualizado com sucesso' });
         }
@@ -66,20 +69,21 @@ export default function PostForm({ postData }) {
         setMessages([]);
     }
 
+
     return (
-        <>
+        <Layout>
             <div className="container">
-                <h1>Novo Post</h1>
+                <h2 className="text-primary">Novo Post</h2>
                 <Messages value={messages} />
                 <form id="form-post" onSubmit={submitPost} noValidate>
                     <div className="form-floating mb-1">
-                        <input id="title" type="text" className="form-control" value={title} onChange={onChangeTitle} placeholder="Título" />
+                        <input id="title" type="text" className="form-control" value={title} onChange={onChangeTitle} placeholder="Título" title="Informe o título do post"/>
                         <label id="labelTitle" htmlFor="title" className="form-label">Título</label>
                     </div>
                     <div className="row g-2 mb-1">
                         <div className="col">
                             <div className="form-floating">
-                                <input id="publishDate" type="text" className="form-control" value={postData?.publishDate} placeholder="01/01/2021 00:00" disabled readOnly />
+                                <input id="publishDate" type="text" className="form-control " value={postData?.publishDate} placeholder="01/01/2021 00:00" disabled readOnly />
                                 <label id="labelPublishDate" htmlFor="publishDate" className="form-label">Publicado em</label>
                             </div>
                         </div>
@@ -91,27 +95,29 @@ export default function PostForm({ postData }) {
                         </div>
                     </div>
                     <div className="form-floating mb-1">
-                        <input id="author" type="text" className="form-control" value={author} onChange={onChangeAuthor} placeholder="Autor" />
+                        <input id="author" type="text" className="form-control" value={author} onChange={onChangeAuthor} placeholder="Autor"  title="Informe o autor do post"/>
                         <label id="labelAuthor" htmlFor="author" className="form-label">Autor</label>
                     </div>
                     <div className="form-floating mb-1">
-                        <input id="summary" type="text" className="form-control" value={summary} onChange={onChangeSummary} placeholder="Resumo" />
+                        <input id="summary" type="text" className="form-control" value={summary} onChange={onChangeSummary} placeholder="Resumo" title="Informe um breve resumo do post"/>
                         <label id="labelSummary" htmlFor="summary" className="form-label">Resumo</label>
                     </div>
                     <div className="form-floating mb-1">
-                        <textarea style={{ height: '200px' }} id="content" type="text" className="form-control" defaultValue={postData?.content} value={content} onChange={onChangeContent} placeholder="Conteúdo" />
+                        <textarea style={{ height: '200px' }} id="content" type="text" className="form-control" defaultValue={postData?.content} value={content} onChange={onChangeContent} placeholder="Conteúdo" title="Informe o conteudo do post, no formato markdown"/>
                         <label id="labelContent" htmlFor="content" className="form-label">Conteúdo</label>
                     </div>
                     <div className="row my-2">
                         <div className="col text-center">
-                            <button id="btn-submit" type="submit" className="btn btn-success mx-1">Salvar/Atualizar</button>
-                            <button id="btn-reset" type="reset" onClick={resetForm} className="btn btn-outline-primary mx-1">Limpar</button>
-                            <button id="btn-cancelar" type="button" className="btn btn-outline-danger mx-1">Limpar</button>
+                            <button id="btn-submit" type="submit" className="btn btn-success mx-1" title="Clique aqui para salvar ou atualizar o post"><FaCheck/>&nbsp;Salvar/Atualizar</button>
+                            <button id="btn-reset" type="reset" onClick={resetForm} className="btn btn-outline-primary mx-1" title="Clique aqui para limpar os campos do formulário"><FaTimes/>&nbsp;Limpar</button>
+                            <Link href="/">
+                                <a id="btn-cancelar" className="btn btn-outline-danger mx-1" role="button" title="Clique aqui para cancelar"><FaArrowLeft/>&nbsp;Voltar</a>
+                            </Link>
                         </div>
                     </div>
                 </form>
             </div>
-        </>
+        </Layout>
     );
 }
 

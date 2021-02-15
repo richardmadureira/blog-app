@@ -1,3 +1,6 @@
+import { parseIso, format, parseISO } from 'date-fns';
+const ptBR = require('date-fns/locale/pt-BR');
+
 export function agruparMensagens(mensagens) {
     let messages = {};
 
@@ -27,4 +30,9 @@ export function getSeverityClass(severity) {
         default:
             return 'alert-info';
     }
+}
+
+export function formatDate(dateString) {
+    const date = parseISO(dateString);
+    return format(date, 'dd/MM/yyyy HH:mm', {locale: ptBR});
 }
