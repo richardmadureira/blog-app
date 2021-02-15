@@ -12,28 +12,28 @@ import { PostQuery } from '../models/PostQuery';
 export default {
     async create(req: Request<any, Post, Post, any, any>, res: Response) {
         const { title, author, summary, content } = req.body;
-        const data = { title, author, summary, content };
-
+        const requestImages = req.files as Express.Multer.File[];
+        const images = requestImages.map(image => {
+            return { path: image.filename }
+        });
+        const data: any = { title, author, summary, content, images };
+        console.log(data)
         const schema = Yup.object().shape({
             title: Yup.string().required('Título é obrigatório'),
             author: Yup.string().required('Author é obrigatório'),
             summary: Yup.string().required('Resumo é obrigatório'),
             content: Yup.string().required('Conteúdo é obrigatório'),
+            images: Yup.array(Yup.object().shape({ path: Yup.string().required('path é obrigatório') }))
         });
         await schema.validate(data, { abortEarly: false });
 
         const postRepository = getRepository(Post);
         const post = postRepository.create(data);
-        const insertResult = await postRepository.insert(post);
+        const insertResult = await postRepository.save(post);
         return res
             .status(201)
             .header('messages', JSON.stringify([new Message(Severity.success, 'Post criado', 'O post foi criado com sucesso!')]))
-            .json({ ...data, ...insertResult.raw[0]});
-        // const savedPost = await postRepository.save(post);
-        // return res
-        //     .status(201)
-        //     .header('messages', JSON.stringify([new Message(Severity.success, 'Post criado', 'O post foi criado com sucesso!')]))
-        //     .json(savedPost);
+            .json(insertResult);
     },
 
     async update(req: Request<PostParams, Post, Post, any, any>, res: Response<Post>) {
@@ -42,6 +42,7 @@ export default {
         if (post) {
             const { title, author, summary, content } = req.body;
             const data: any = { title, author, summary, content };
+
             if (data.title === post.title) delete (data.title);
             if (data.author === post.author) delete (data.author);
             if (data.summary === post.summary) delete (data.summary);
@@ -56,8 +57,7 @@ export default {
             await schema.validate(data, { abortEarly: false });
             const columns: any = getWhereArgs(data);
             await getRepository(Post).update(id, columns);
-            //estou fazendo uma nova consulta porque o 'await getRepository(Post).update(id, columns)' não retorna a coluna publishDate (ou lastUpdate) corretamente;
-            const updatedPost = await getRepository(Post).findOne(id);
+            const updatedPost = await getRepository(Post).findOne(id, { relations: ['images'] });
             return res
                 .status(200)
                 .header('messages', JSON.stringify([new Message(Severity.error, 'Post atualizado', `O post de identificador ${id} informado foi atualizado com sucesso`)]))
@@ -83,7 +83,7 @@ export default {
         await schema.validate(data, { abortEarly: false });
 
         const whereArgs = getWhereArgs(data);
-        const result: [Post[], number] = await getRepository(Post).findAndCount({ order: JSON.parse(order), where: whereArgs, take: size, skip: (page - 1) });
+        const result: [Post[], number] = await getRepository(Post).findAndCount({ relations: ['images'], order: JSON.parse(order), where: whereArgs, take: size, skip: (page - 1) });
 
         return res
             .header('x-page', page.toString())
@@ -109,7 +109,7 @@ export default {
 
     async findById(req: Request<PostParams, void, Post>, res: Response<Post | void>) {
         const { id } = req.params;
-        const post = await getRepository(Post).findOne(id);
+        const post = await getRepository(Post).findOne(id, { relations: ['images'] });
         if (post) {
             return res
                 .header('messages', JSON.stringify([new Message(Severity.success, 'Post encontrado', 'O post foi encontrado no banco de dados')]))
@@ -121,7 +121,7 @@ export default {
     },
 
     async findAllPostIds(req: Request, res: Response) {
-        const posts: Array<Post> = await getRepository(Post).find({select: ["id"]});
+        const posts: Array<Post> = await getRepository(Post).find({ select: ["id"] });
         return res
             .header("messages", JSON.stringify([new Message(Severity.success, 'Ids encontrados', `${posts.length} ids encontrados`)]))
             .json(postView.renderManyIds(posts));

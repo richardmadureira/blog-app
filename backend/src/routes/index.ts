@@ -1,9 +1,12 @@
 import express from 'express';
+import multer from 'multer';
 import PostController from '../controllers/PostController';
+import uploadConfig from '../config/upload';
 
 const routes = express.Router();
+const upload = multer(uploadConfig);
 
-routes.post('/posts', PostController.create);
+routes.post('/posts', upload.array('images'), PostController.create);
 routes.put('/posts/:id', PostController.update);
 routes.delete('/posts/:id', PostController.delete);
 routes.get('/posts/:id', PostController.findById);
