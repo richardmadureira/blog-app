@@ -2,8 +2,6 @@ import Head from 'next/head'
 import { getSortedPostsData } from '../lib/posts';
 import Link from 'next/link';
 import Layout from '../components/Layout';
-import LightBlogA from '../components/LightBlog';
-import DarkBlogA from '../components/DarkBlog';
 
 export default function Home({ allPostsData }) {
   return (
