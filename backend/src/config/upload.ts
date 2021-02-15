@@ -1,6 +1,6 @@
 import multer from 'multer';
 import { Request } from 'express';
-import path = require('path');
+import path from 'path';
 
 export default {
     storage: multer.diskStorage({
