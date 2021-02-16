@@ -7,6 +7,8 @@ export class Image {
     id: string;
     @Column()
     path: string;
+    @Column()
+    hash: string;
     @ManyToOne(type => Post, post => post.images)
     @JoinColumn({ name: 'post_id' })
     post: Post;

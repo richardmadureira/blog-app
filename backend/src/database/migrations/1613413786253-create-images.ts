@@ -18,6 +18,10 @@ export class createImages1613413786253 implements MigrationInterface {
                     type: 'varchar'
                 },
                 {
+                    name: 'hash',
+                    type: 'varchar'
+                },
+                {
                     name: 'post_id',
                     type: 'varchar'
                 }

@@ -14,7 +14,7 @@ export default {
         const { title, author, summary, content } = req.body;
         const requestImages = req.files as Express.Multer.File[];
         const images = requestImages.map(image => {
-            return { path: image.filename }
+            return { path: image.filename, hash: 'hash do arquivo' }
         });
         const data: any = { title, author, summary, content, images };
         console.log(data)
@@ -29,11 +29,11 @@ export default {
 
         const postRepository = getRepository(Post);
         const post = postRepository.create(data);
-        const insertResult = await postRepository.save(post);
+        const insertResult: any = await postRepository.save(post);
         return res
             .status(201)
             .header('messages', JSON.stringify([new Message(Severity.success, 'Post criado', 'O post foi criado com sucesso!')]))
-            .json(insertResult);
+            .json(postView.render(insertResult));
     },
 
     async update(req: Request<PostParams, Post, Post, any, any>, res: Response<Post>) {
@@ -61,7 +61,7 @@ export default {
             return res
                 .status(200)
                 .header('messages', JSON.stringify([new Message(Severity.error, 'Post atualizado', `O post de identificador ${id} informado foi atualizado com sucesso`)]))
-                .json(updatedPost);
+                .json(postView.render(updatedPost));
         }
         return res
             .header('messages', JSON.stringify([new Message(Severity.warning, 'Post não encontrado', `Não foi encontrado nenhum post para o identificador ${id} informado`)]))
