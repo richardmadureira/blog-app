@@ -7,7 +7,7 @@ import { getWhereArgs } from '../utils';
 import { Message } from '../models/Message';
 import { Severity } from '../models/Severity';
 import { PostParams } from '../models/PostParams';
-import { PostQuery } from '../models/PostQuery';
+import { PageQuery } from '../models/PageQuery';
 
 export default {
     async create(req: Request<any, Post, Post, any, any>, res: Response) {
@@ -68,7 +68,7 @@ export default {
             .sendStatus(404);
     },
 
-    async findAll(req: Request<PostParams, Post[], Post, PostQuery, any>, res: Response<Post[]>) {
+    async findAll(req: Request<PostParams, Post[], Post, PageQuery, any>, res: Response<Post[]>) {
         const { title, author, summary, content, publishDate, lastUpdate } = req.body;
         const { page = 1, size = 10, order = '{"publishDate":"DESC"}' } = req.query;
         const data = { title, author, summary, content, publishDate, lastUpdate };
