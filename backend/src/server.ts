@@ -16,5 +16,8 @@ app.use(routes);
 app.use('/uploads', express.static(path.join(__dirname, "..", "uploads")));
 app.use(errorHandler);
 app.disable('x-powered-by');
+app.get('/', async (req, res) => {
+    return res.json({message: 'Hello, World'});
+});
 
-app.listen(3333, () => console.log('servidor iniciado na porta 3333'));
+app.listen(3333, '192.168.100.43', () => console.log('servidor iniciado na porta 3333'));

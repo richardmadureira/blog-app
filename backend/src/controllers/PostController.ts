@@ -1,61 +1,73 @@
 import { Request, Response } from 'express';
-import { getRepository, UpdateResult } from 'typeorm';
+import { getRepository } from 'typeorm';
 import * as Yup from 'yup';
-import { Post } from '../models/Post';
+import { Post } from '../entities/Post';
 import postView from '../views/post_view';
-import { getWhereArgs } from '../utils';
+import { getWherePostArgs } from '../utils';
 import { Message } from '../models/Message';
 import { Severity } from '../models/Severity';
-import { PostParams } from '../models/PostParams';
+import { IDParams } from '../models/IdParams';
 import { PageQuery } from '../models/PageQuery';
+import { Category } from '../entities/Category';
+import {getConnection} from "typeorm";
 
 export default {
     async create(req: Request<any, Post, Post, any, any>, res: Response) {
-        const { title, author, summary, content } = req.body;
-        const requestImages = req.files as Express.Multer.File[];
-        const images = requestImages.map(image => {
-            return { path: image.filename, hash: 'hash do arquivo' }
-        });
-        const data: any = { title, author, summary, content, images };
-        console.log(data)
+        const { title, author, excerpt, content, categories, publishDate } = req.body;
+        const requestImages:any = req.files as Express.Multer.File[];
+        const coverImage = requestImages.coverImage[0].filename;
+        let images: any[] = requestImages.images.map(image => { return {path: image.filename, hash: 'hash do arquivo'}});
+
+        const data: any = { coverImage, title, author, excerpt, content, images, categories, publishDate };
         const schema = Yup.object().shape({
             title: Yup.string().required('Título é obrigatório'),
             author: Yup.string().required('Author é obrigatório'),
-            summary: Yup.string().required('Resumo é obrigatório'),
+            excerpt: Yup.string().required('Resumo é obrigatório'),
             content: Yup.string().required('Conteúdo é obrigatório'),
-            images: Yup.array(Yup.object().shape({ path: Yup.string().required('path é obrigatório') }))
+            images: Yup.array(Yup.object().shape({ path: Yup.string().required('path é obrigatório') })),
+            categories: Yup.array(Yup.string().required('Categorias é obrigatório')).required('Categorias é obrigatório'),
+            publishDate: Yup.date().notRequired()
         });
         await schema.validate(data, { abortEarly: false });
 
+        const categoryRepository = getRepository(Category);
+        const categoriesEntities = await categoryRepository.findByIds(categories);
+        data.categories = categoriesEntities;
+
         const postRepository = getRepository(Post);
-        const post = postRepository.create(data);
-        const insertResult: any = await postRepository.save(post);
+        const insertResult: any = await postRepository.save(data);
         return res
             .status(201)
             .header('messages', JSON.stringify([new Message(Severity.success, 'Post criado', 'O post foi criado com sucesso!')]))
             .json(postView.render(insertResult));
     },
 
-    async update(req: Request<PostParams, Post, Post, any, any>, res: Response<Post>) {
+    async update(req: Request<IDParams, Post, Post, any, any>, res: Response<Post>) {
         const { id } = req.params;
         const post = await getRepository(Post).findOne(id);
         if (post) {
-            const { title, author, summary, content } = req.body;
-            const data: any = { title, author, summary, content };
+            const { title, author, excerpt, content, viewsCount, publishDate, categories } = req.body;
+            const data: any = { title, author, excerpt, content, viewsCount, publishDate, categories };
 
             if (data.title === post.title) delete (data.title);
             if (data.author === post.author) delete (data.author);
-            if (data.summary === post.summary) delete (data.summary);
+            if (data.excerpt === post.excerpt) delete (data.excerpt);
             if (data.content === post.content) delete (data.content);
+            if (data.publishDate === post.publishDate) delete (data.publishDate);
+            if (data.viewsCount === post.viewsCount) delete (data.viewsCount);
+            if (data.categories === post.categories) delete (data.categories);
 
             const schema = Yup.object().shape({
                 title: Yup.string().notRequired(),
                 author: Yup.string().notRequired(),
-                summary: Yup.string().notRequired(),
+                excerpt: Yup.string().notRequired(),
                 content: Yup.string().notRequired(),
+                publishDate: Yup.date().notRequired(),
+                viewsCount: Yup.number().notRequired(),
+                categories: Yup.string().notRequired()
             });
             await schema.validate(data, { abortEarly: false });
-            const columns: any = getWhereArgs(data);
+            const columns: any = getWherePostArgs(data);
             await getRepository(Post).update(id, columns);
             const updatedPost = await getRepository(Post).findOne(id, { relations: ['images'] });
             return res
@@ -68,22 +80,25 @@ export default {
             .sendStatus(404);
     },
 
-    async findAll(req: Request<PostParams, Post[], Post, PageQuery, any>, res: Response<Post[]>) {
-        const { title, author, summary, content, publishDate, lastUpdate } = req.body;
+    async findAll(req: Request<IDParams, Post[], Post, PageQuery, any>, res: Response<Post[]>) {
+        const { title, author, excerpt, content, viewsCount, publishDate, createdAt, updatedAt, categories } = req.body;
         const { page = 1, size = 10, order = '{"publishDate":"DESC"}' } = req.query;
-        const data = { title, author, summary, content, publishDate, lastUpdate };
+        const data = { title, author, excerpt, content, viewsCount, createdAt, updatedAt, categories };
         const schema = Yup.object().shape({
             title: Yup.string().notRequired(),
             author: Yup.string().notRequired(),
-            summary: Yup.string().notRequired(),
+            excerpt: Yup.string().notRequired(),
+            viewsCount: Yup.number().notRequired(),
             content: Yup.string().notRequired(),
             publishDate: Yup.date().notRequired(),
-            lastUpdate: Yup.date().notRequired()
+            createAt: Yup.date().notRequired(),
+            updatedAt: Yup.date().notRequired(),
+            categories: Yup.date().notRequired(),
         });
         await schema.validate(data, { abortEarly: false });
 
-        const whereArgs = getWhereArgs(data);
-        const result: [Post[], number] = await getRepository(Post).findAndCount({ relations: ['images'], order: JSON.parse(order), where: whereArgs, take: size, skip: (page - 1) });
+        const whereArgs = getWherePostArgs(data);
+        const result: [Post[], number] = await getRepository(Post).findAndCount({ relations: ['images', 'categories'], order: JSON.parse(order), where: whereArgs, take: size, skip: (page - 1) });
 
         return res
             .header('x-page', page.toString())
@@ -93,7 +108,7 @@ export default {
             .json(postView.renderMany(result[0]));
     },
 
-    async delete(req: Request<PostParams, void, void, any>, res: Response) {
+    async delete(req: Request<IDParams, void, void, any>, res: Response) {
         const { id } = req.params;
         const post = await getRepository(Post).findOne(id);
         if (post) {
@@ -107,9 +122,9 @@ export default {
             .sendStatus(404);
     },
 
-    async findById(req: Request<PostParams, void, Post>, res: Response<Post | void>) {
+    async findById(req: Request<IDParams, void, Post>, res: Response<Post | void>) {
         const { id } = req.params;
-        const post = await getRepository(Post).findOne(id, { relations: ['images'] });
+        const post = await getRepository(Post).findOne(id, { relations: ['images', 'categories'] });
         if (post) {
             return res
                 .header('messages', JSON.stringify([new Message(Severity.success, 'Post encontrado', 'O post foi encontrado no banco de dados')]))
@@ -125,6 +140,13 @@ export default {
         return res
             .header("messages", JSON.stringify([new Message(Severity.success, 'Ids encontrados', `${posts.length} ids encontrados`)]))
             .json(postView.renderManyIds(posts));
+    },
 
+    async atualizarViewsCount(req: Request, res:Response){
+        const { id } = req.params;
+        await getConnection().createQueryBuilder().update(Post)
+        .set({viewsCount: () => "views_count + 1"})
+        .where("id = :id", { id })
+        .execute();
     }
 }

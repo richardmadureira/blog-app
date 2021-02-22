@@ -1,29 +1,36 @@
-import { Post } from '../models/Post';
+import { Post } from '../entities/Post';
 import images_view from './images_view';
+import comments_view from './comments_view';
+import categories_view from './categories_view';
 
 export default {
-    render(post: Post) {
+    render(post: Post): any {
         return post ? {
             id: post.id,
             title: post.title,
             author: post.author,
-            summary: post.summary,
+            excerpt: post.excerpt,
             content: post.content,
+            coverImage: `${process.env.URL_BACKEND}/uploads/${post.coverImage}`,
+            viewsCount: post.viewsCount,
+            categories: categories_view.renderMany(post.categories),
             publishDate: post.publishDate,
-            lastUpdate: post.lastUpdate,
-            images: images_view.renderMany(post.images)
+            createdAt: post.createdAt,
+            updatedAt: post.updatedAt,
+            images: images_view.renderMany(post.images),
+            comments: comments_view.renderMany(post.comments)
         } : null;
     },
-
-    renderMany(posts: Post[]) {
-        return posts ? posts.map(post => this.render(post)) : [];
-    },
-
-    renderId(post: Post) {
+    
+    renderId(post: Post): any {
         return post ? post.id : null;
     },
 
-    renderManyIds(posts: Post[]) {
+    renderMany(posts: Post[]): any[] {
+        return posts ? posts.map(post => this.render(post)) : [];
+    },
+
+    renderManyIds(posts: Post[]): any[] {
         return posts ? posts.map(p => this.renderId(p)) : [];
     }
 }
