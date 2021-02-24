@@ -11,15 +11,14 @@ export default function Post() {
     const { query } = useRouter();
     const { id } = query;
     const { data, error, isValidating } = useSWR(`${URL_BACKEND}/posts/${id}`, fetcher);
-    
+
     if (error) return <div>{error.message}</div>
     if (!data) return <div>Carregando...</div>
-    
+
     return (
         <>
             <Head>
-                <title>Blog App</title>
-                <meta name="description" content="Blog App - NextJS"/>
+                <title>Post</title>
             </Head>
             <section className="mx-auto text-gray-600 body-font">
                 <div className="text-right pr-4 pt-2"><DataValidating isValidating={isValidating} /></div>

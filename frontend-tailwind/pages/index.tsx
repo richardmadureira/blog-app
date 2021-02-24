@@ -15,13 +15,12 @@ export default function Index({ posts }) {
   return (
     <>
       <Head>
-        <title>Posts publicados</title>
-        <meta name="description" content="Posts Publicados"/>
+        <title>Posts Publicados</title>
       </Head>
       <section className="text-gray-600 body-font">
         <div className="text-right pr-4 pt-2"><DataValidating isValidating={isValidating} /></div>
         <div className="container px-5 lg:py-8 md:py-4 sm:py-1 mx-auto flex flex-wrap -m-4">
-            {data.map(post => <PostCard key={post.id} post={post} />)}
+          {data.map(post => <PostCard key={post.id} post={post} />)}
         </div>
       </section>
     </>

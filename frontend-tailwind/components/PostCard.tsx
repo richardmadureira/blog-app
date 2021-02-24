@@ -15,7 +15,7 @@ export default function PostCard({ post }: PostCardProps) {
                     <h1 className="title-font text-lg font-medium text-gray-900 mb-3">
                         <span className="text-left">{post.title}</span>
                         <span className="float-right text-right">
-                            <Link href="/posts/edit/[id]" as={`/posts/edit/${post.id}`}><a><FontAwesomeIcon className={`text-indigo-500 text-sm inline-flex items-center md:mb-2 lg:mb-0`} icon={faPen}/></a></Link>
+                            <Link href="/posts/edit/[id]" as={`/posts/edit/${post.id}`}><a title="Edit"><FontAwesomeIcon className={`text-indigo-500 text-sm inline-flex items-center md:mb-2 lg:mb-0`} icon={faPen}/></a></Link>
                         </span>
                     </h1>
                     <p className="leading-relaxed mb-3">{post.excerpt}</p>
