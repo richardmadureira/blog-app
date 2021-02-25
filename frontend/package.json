@@ -14,6 +14,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@tailwindcss/forms": "^0.2.1",
+    "axios": "^0.21.1",
     "font-awesome": "^4.7.0",
     "next": "10.0.7",
     "react": "17.0.1",
@@ -25,6 +26,7 @@
     "typeface-karla": "^1.1.13"
   },
   "devDependencies": {
+    "@types/axios": "^0.14.0",
     "@types/node": "^14.14.30",
     "@types/react": "^17.0.2",
     "autoprefixer": "^10.2.4",

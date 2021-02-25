@@ -6,6 +6,7 @@ interface ValidationErrors {
 }
 
 const errorHandler: ErrorRequestHandler = (error, request: Request<any>, response:Response<any>, next) => {
+    console.log(error);
     if(error instanceof ValidationError){
         let errors: ValidationErrors = {};
         error.inner.forEach((err:any) => {

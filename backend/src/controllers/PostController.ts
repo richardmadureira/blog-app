@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { json, Request, Response } from 'express';
 import { getRepository } from 'typeorm';
 import * as Yup from 'yup';
 import { Post } from '../entities/Post';
@@ -16,22 +16,21 @@ export default {
         const { title, author, excerpt, content, categories, publishDate } = req.body;
         const requestImages:any = req.files as Express.Multer.File[];
         const coverImage = requestImages.coverImage[0].filename;
-        let images: any[] = requestImages.images.map(image => { return {path: image.filename, hash: 'hash do arquivo'}});
-
-        const data: any = { coverImage, title, author, excerpt, content, images, categories, publishDate };
+        let images: any[] = requestImages.images && requestImages.images.lenght>0 ? requestImages.images.map(image => { return {path: image.filename, hash: 'hash do arquivo'}}): [];
+        const data: any = { coverImage, title, author, excerpt, content, images, publishDate, categories };
         const schema = Yup.object().shape({
             title: Yup.string().required('Título é obrigatório'),
             author: Yup.string().required('Author é obrigatório'),
             excerpt: Yup.string().required('Resumo é obrigatório'),
             content: Yup.string().required('Conteúdo é obrigatório'),
             images: Yup.array(Yup.object().shape({ path: Yup.string().required('path é obrigatório') })),
-            categories: Yup.array(Yup.string().required('Categorias é obrigatório')).required('Categorias é obrigatório'),
+            categories: Yup.array(Yup.object().shape({id: Yup.string(), name: Yup.string()}).required('Categorias é obrigatório')).required('Categorias é obrigatório'),
             publishDate: Yup.date().notRequired()
         });
         await schema.validate(data, { abortEarly: false });
 
         const categoryRepository = getRepository(Category);
-        const categoriesEntities = await categoryRepository.findByIds(categories);
+        const categoriesEntities = await categoryRepository.findByIds(JSON.parse(categories.toString()).map(c => c.id));
         data.categories = categoriesEntities;
 
         const postRepository = getRepository(Post);
