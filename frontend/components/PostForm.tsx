@@ -104,16 +104,20 @@ export default function PostForm() {
     }
 
     const resetForm = () => {
+        setCoverImage(null);
         setTitle('');
         setAuthor('');
+        setExcerpt('');
+        setPublishDate('');
         setContent('');
+        setCategories([]);
         setMessages([]);
     }
 
     return (
         <>
             <h1 className="text-xl text-blue-700 text-center">New Post</h1>
-            {(messages && messages.length > 0) && <Messages messages={messages} />}
+            <Messages messages={messages} />
             <form id="form-post" onSubmit={onSubmit}>
                 <label id="labelCoverImage" className="block my-2" htmlFor="coverImage">
                     <span className="text-gray-700">Title</span>

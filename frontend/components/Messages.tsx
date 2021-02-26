@@ -4,8 +4,12 @@ import { getMessagesGroupedBySeverityAndSummary } from "../lib/utils";
 import MessagesProps from "../lib/interfaces/MessagesProps";
 
 export default function Messages({ messages }: MessagesProps) {
+    if(!messages || messages.length === 0){
+        return <div/>;
+    }
     let msgs = !Array.isArray(messages)? [messages]: messages;
     const mapMessages = getMessagesGroupedBySeverityAndSummary(msgs);
+    
     
     return (
         <>

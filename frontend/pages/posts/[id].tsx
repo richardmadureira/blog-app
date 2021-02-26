@@ -2,6 +2,9 @@ import { GetStaticPaths, GetStaticProps } from 'next';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import useSWR from 'swr';
+import remark from 'remark';
+import html from 'remark-html';
+import matter from 'gray-matter';
 import PostDetail from '../../components/PostDetail';
 import { fetcher } from '../../lib/utils';
 import { URL_BACKEND } from '../../lib/utils/constants';
@@ -10,7 +13,7 @@ import DataValidating from '../../components/DataValidating';
 export default function Post() {
     const { query } = useRouter();
     const { id } = query;
-    const { data, error, isValidating } = useSWR(`${URL_BACKEND}/posts/${id}`, fetcher);
+    const { data, error, isValidating } = useSWR(`https://192.168.100.43/blog/api/posts/${id}`, fetcher);
 
     if (error) return <div>{error.message}</div>
     if (!data) return <div>Carregando...</div>
@@ -39,7 +42,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
     const { id } = params;
-    const response = await fetch(`${URL_BACKEND}/posts/${id}`);
+    const response = await fetch(`https://192.168.100.43/blog/api/posts/${id}`);
     const post = await response.json();
     return {
         props: {
