@@ -5,9 +5,7 @@ import matter from 'gray-matter';
 import { URL_BACKEND } from "../../../lib/utils/constants";
 
 export default async function obterPostsPeloId(req, res) {
-    const { query : { id, previousPost, nextPost }, } = req;
-    console.log(previousPost);
-    console.log(nextPost);
+    const { query : { id }, } = req;
     const response = await fetch(`${URL_BACKEND}/posts/${id}`);
     let post = await response.json();
     
