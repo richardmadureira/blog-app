@@ -147,5 +147,9 @@ export default {
         .set({viewsCount: () => "views_count + 1"})
         .where("id = :id", { id })
         .execute();
+
+        return res
+        .header('messages', JSON.stringify([]))
+        .sendStatus(200);
     }
 }
