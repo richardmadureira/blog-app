@@ -1,0 +1,6 @@
+{
+  "logLevel": "error",
+  "logFile": "logs/backend.log",
+  "errorLogLevel": "error",
+  "errorLogFile": "logs/error.log"
+}

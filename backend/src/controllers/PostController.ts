@@ -9,14 +9,16 @@ import { Severity } from '../models/Severity';
 import { IDParams } from '../models/IdParams';
 import { PageQuery } from '../models/PageQuery';
 import { Category } from '../entities/Category';
-import {getConnection} from "typeorm";
+import { getConnection } from "typeorm";
+import logger from '../config/logger';
 
 export default {
     async create(req: Request<any, Post, Post, any, any>, res: Response) {
+        logger.info('Solicitação de criação de post recebida');
         const { title, author, excerpt, content, categories, publishDate } = req.body;
-        const requestImages:any = req.files as Express.Multer.File[];
+        const requestImages: any = req.files as Express.Multer.File[];
         const coverImage = requestImages.coverImage[0].filename;
-        let images: any[] = requestImages.images && requestImages.images.lenght>0 ? requestImages.images.map(image => { return {path: image.filename, hash: 'hash do arquivo'}}): [];
+        let images: any[] = requestImages.images && requestImages.images.lenght > 0 ? requestImages.images.map(image => { return { path: image.filename, hash: 'hash do arquivo' } }) : [];
         const data: any = { coverImage, title, author, excerpt, content, images, publishDate, categories };
         const schema = Yup.object().shape({
             title: Yup.string().required('Título é obrigatório'),
@@ -24,7 +26,7 @@ export default {
             excerpt: Yup.string().required('Resumo é obrigatório'),
             content: Yup.string().required('Conteúdo é obrigatório'),
             images: Yup.array(Yup.object().shape({ path: Yup.string().required('path é obrigatório') })),
-            categories: Yup.array(Yup.object().shape({id: Yup.string(), name: Yup.string()}).required('Categorias é obrigatório')).required('Categorias é obrigatório'),
+            categories: Yup.array(Yup.object().shape({ id: Yup.string(), name: Yup.string() }).required('Categorias é obrigatório')).required('Categorias é obrigatório'),
             publishDate: Yup.date().notRequired()
         });
         await schema.validate(data, { abortEarly: false });
@@ -33,8 +35,8 @@ export default {
         const categoriesEntities = await categoryRepository.findByIds(JSON.parse(categories.toString()).map(c => c.id));
         data.categories = categoriesEntities;
 
-        const postRepository = getRepository(Post);
-        const insertResult: any = await postRepository.save(data);
+        const insertResult: any = await getRepository(Post).save(data);
+        logger.debug(`Post de identificador ${insertResult.id} criado com sucesso`)
         return res
             .status(201)
             .header('messages', JSON.stringify([new Message(Severity.success, 'Post criado', 'O post foi criado com sucesso!')]))
@@ -42,6 +44,7 @@ export default {
     },
 
     async update(req: Request<IDParams, Post, Post, any, any>, res: Response<Post>) {
+        logger.info('Solicitação de atualização de post recebida');
         const { id } = req.params;
         const post = await getRepository(Post).findOne(id);
         if (post) {
@@ -69,17 +72,20 @@ export default {
             const columns: any = getWherePostArgs(data);
             await getRepository(Post).update(id, columns);
             const updatedPost = await getRepository(Post).findOne(id, { relations: ['images'] });
+            logger.debug(`Post de identificador ${id} atualizado com sucesso`);
             return res
                 .status(200)
                 .header('messages', JSON.stringify([new Message(Severity.error, 'Post atualizado', `O post de identificador ${id} informado foi atualizado com sucesso`)]))
                 .json(postView.render(updatedPost));
         }
+        logger.debug(`Post não encontrado para o identificador ${id} informado`)
         return res
             .header('messages', JSON.stringify([new Message(Severity.warning, 'Post não encontrado', `Não foi encontrado nenhum post para o identificador ${id} informado`)]))
             .sendStatus(404);
     },
 
     async findAll(req: Request<IDParams, Post[], Post, PageQuery, any>, res: Response<Post[]>) {
+        logger.info('Solicitação de pesquisa de post recebida');
         const { title, author, excerpt, content, viewsCount, publishDate, createdAt, updatedAt, categories } = req.body;
         const { page = 1, size = 10, order = '{"publishDate":"DESC"}' } = req.query;
         const data = { title, author, excerpt, content, viewsCount, createdAt, updatedAt, categories };
@@ -98,7 +104,7 @@ export default {
 
         const whereArgs = getWherePostArgs(data);
         const result: [Post[], number] = await getRepository(Post).findAndCount({ relations: ['images', 'categories'], order: JSON.parse(order), where: whereArgs, take: size, skip: (page - 1) });
-
+        logger.debug(`Total de posts encontrados: ${result[1]}`);
         return res
             .header('x-page', page.toString())
             .header('x-size', size.toString())
@@ -108,48 +114,57 @@ export default {
     },
 
     async delete(req: Request<IDParams, void, void, any>, res: Response) {
+        logger.info('Solicitação de exclusão de post recebida');
         const { id } = req.params;
         const post = await getRepository(Post).findOne(id);
         if (post) {
             await getRepository(Post).delete(id);
+            logger.debug(`Post excluído de identificador ${id} com sucesso`);
             return res
                 .header('messages', JSON.stringify([new Message(Severity.success, 'Post Excluído', `O post de identificador ${id} informado foi excluído com sucesso`)]))
                 .sendStatus(200);
         }
+        logger.debug(`Post não encontrado para o identificador ${id} informado`)
         return res
             .header('messages', JSON.stringify([new Message(Severity.success, 'Post não Encontrado', `O post de identificador ${id} informado não foi encontrado`)]))
             .sendStatus(404);
     },
 
     async findById(req: Request<IDParams, void, Post>, res: Response<Post | void>) {
+        logger.info('Solicitação de pesquisa de post pelo id recebida');
         const { id } = req.params;
         const post = await getRepository(Post).findOne(id, { relations: ['images', 'categories'] });
         if (post) {
+            logger.debug(`Post encontrado: ${post.id}`);
             return res
                 .header('messages', JSON.stringify([new Message(Severity.success, 'Post encontrado', 'O post foi encontrado no banco de dados')]))
                 .json(postView.render(post));
         }
+        logger.debug(`Post não encontrado id: ${id}`);
         return res
             .header('messages', JSON.stringify([new Message(Severity.error, 'Post não encontrado', `Não foi encontrado nenhum post para o identificador ${id} informado`)]))
             .sendStatus(404);
     },
 
     async findAllPostIds(req: Request, res: Response) {
+        logger.info('Solicitação de pesquisa de todas os ids de posts recebida');
         const posts: Array<Post> = await getRepository(Post).find({ select: ["id"] });
+        logger.debug(`Total de ids: ${posts.length}`);
         return res
             .header("messages", JSON.stringify([new Message(Severity.success, 'Ids encontrados', `${posts.length} ids encontrados`)]))
             .json(postView.renderManyIds(posts));
     },
 
-    async atualizarViewsCount(req: Request, res:Response){
+    async atualizarViewsCount(req: Request, res: Response) {
+        logger.info('Solicitação de atualização de contagem de views de post recebida');
         const { id } = req.params;
         await getConnection().createQueryBuilder().update(Post)
-        .set({viewsCount: () => "views_count + 1"})
-        .where("id = :id", { id })
-        .execute();
-
+            .set({ viewsCount: () => "views_count + 1" })
+            .where("id = :id", { id })
+            .execute();
+        logger.debug('Solicitação de atualização de contagem de views atentida');
         return res
-        .header('messages', JSON.stringify([]))
-        .sendStatus(200);
+            .header('messages', JSON.stringify([]))
+            .sendStatus(200);
     }
 }

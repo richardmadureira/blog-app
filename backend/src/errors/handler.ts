@@ -1,12 +1,13 @@
 import { ErrorRequestHandler, Request, Response } from 'express';
 import { ValidationError } from 'yup';
+import logger from '../config/logger';
 
 interface ValidationErrors {
     [key: string]: string[]
 }
 
 const errorHandler: ErrorRequestHandler = (error, request: Request<any>, response:Response<any>, next) => {
-    console.log(error);
+    logger.error(error);
     if(error instanceof ValidationError){
         let errors: ValidationErrors = {};
         error.inner.forEach((err:any) => {
